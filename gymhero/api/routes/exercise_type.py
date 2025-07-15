@@ -12,7 +12,6 @@ from gymhero.models.user import User
 from gymhero.schemas.exercise_type import (
     ExerciseTypeCreate,
     ExerciseTypeInDB,
-    ExerciseTypeUpdate,
 )
 
 log = get_logger(__name__)
@@ -129,53 +128,6 @@ def create_exercise_type(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Exercise type with name {exercise_type_create.name} already exists",
         ) from e
-    return exercise_type
-
-
-@router.put(
-    "/{exercise_type_id}",
-    response_model=ExerciseTypeInDB,
-    status_code=status.HTTP_200_OK,
-)
-def update_exercise_type(
-    exercise_type_id: int,
-    exercise_type_update: ExerciseTypeUpdate,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_superuser),
-):
-    """
-    Update an exercise type in the database.
-
-    Parameters:
-        exercise_type_id (int): The ID of the exercise type to be updated.
-        exercise_type_update (ExerciseTypeUpdate): The updated exercise type data.
-        db (Session): The database session. Defaults to Depends(get_db).
-        user (User): The current user.
-
-    Returns:
-        ExerciseTypeInDB: The updated exercise type.
-
-    Raises:
-        HTTPException: If the exercise type with the specified ID
-        is not found or if there is an internal server error during the update process.
-    """
-    exercise_type = exercise_type_crud.get_one(db, ExerciseType.id == exercise_type_id)
-    if exercise_type is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Exercise type with id {exercise_type_id} not found.",
-        )
-
-    try:
-        exercise_type = exercise_type_crud.update(
-            db, exercise_type, exercise_type_update
-        )
-    except Exception as e:  # pragma no cover
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Couldn't update exercise type with id {exercise_type_id}. \
-                Error: {str(e)}",
-        ) from e  # pragma no cover
     return exercise_type
 
 

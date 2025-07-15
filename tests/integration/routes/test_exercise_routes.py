@@ -90,59 +90,6 @@ def test_create_exercise(test_client, seed_test_database, valid_jwt_token):
     assert response.status_code == 409
 
 
-def test_can_update_exercise(
-    test_client, seed_test_database, valid_jwt_token, get_test_db
-):
-    response = test_client.put(
-        "/exercises/1",
-        json={
-            "name": "test",
-            "description": "test",
-            "exercise_type_id": 1,
-            "level_id": 1,
-            "target_body_part_id": 1,
-        },
-        headers={"Authorization": valid_jwt_token},
-    )
-    assert response.status_code == 200
-
-    response = test_client.put(
-        "/exercises/43242341",
-        json={
-            "name": "test",
-            "description": "test",
-            "exercise_type_id": 1,
-            "level_id": 1,
-            "target_body_part_id": 1,
-        },
-        headers={"Authorization": valid_jwt_token},
-    )
-    assert (
-        response.status_code == 404
-        and response.json()["detail"] == "Exercise with id 43242341 not found"
-    )
-
-    _create_first_user(get_test_db, "admin@admin.com", "admin", "Admin", False, True)
-    # update not yours
-    second_jwt = _create_jwt_for_user(2)
-
-    response = test_client.put(
-        "/exercises/2",
-        json={
-            "name": "test",
-            "description": "test",
-            "exercise_type_id": 1,
-            "level_id": 1,
-            "target_body_part_id": 1,
-        },
-        headers={"Authorization": second_jwt},
-    )
-    assert (
-        response.status_code == 403
-        and response.json()["detail"] == "Not enough permissions to update exercise"
-    )
-
-
 def test_can_delete_exercise(
     test_client, get_test_db, seed_test_database, valid_jwt_token
 ):

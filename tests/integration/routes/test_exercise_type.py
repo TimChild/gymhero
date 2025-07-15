@@ -108,22 +108,3 @@ def test_can_delete_exercise_type(
     )
 
 
-def test_can_update_exercise_type(
-    test_client, seed_exercise_types, valid_jwt_token, first_active_superuser
-):
-    response = test_client.put(
-        "/exercise-types/1",
-        json={"name": "test", "description": "test"},
-        headers={"Authorization": valid_jwt_token},
-    )
-    assert response.status_code == 200
-
-    response = test_client.put(
-        "/exercise-types/100",
-        json={"name": "test", "description": "test"},
-        headers={"Authorization": valid_jwt_token},
-    )
-    assert (
-        response.status_code == 404
-        and response.json()["detail"] == "Exercise type with id 100 not found."
-    )

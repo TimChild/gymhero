@@ -22,22 +22,12 @@ class ExerciseBase(BaseModel):
     level_id: int = Field(..., gt=0, description="The id of the level")
 
 
-class ExerciseCreate(ExerciseBase):
-    ...
-
-
-class ExerciseUpdate(ExerciseBase):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    target_body_part_id: Optional[int] = None
-    exercise_type_id: Optional[int] = None
-    level_id: Optional[int] = None
+class ExerciseCreate(ExerciseBase): ...
 
 
 class ExerciseInDB(ExerciseBase):
     id: int
     created_at: datetime.datetime
-    updated_at: datetime.datetime
     owner_id: int
     model_config = ConfigDict(from_attributes=True)
 
