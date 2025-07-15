@@ -9,7 +9,7 @@ from gymhero.database.db import get_db
 from gymhero.log import get_logger
 from gymhero.models import User
 from gymhero.models.exercise import Exercise
-from gymhero.schemas.exercise import ExerciseCreate, ExerciseInDB, ExerciseUpdate
+from gymhero.schemas.exercise import ExerciseCreate, ExerciseInDB
 
 log = get_logger(__name__)
 
@@ -171,60 +171,6 @@ def create_exercise(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Exercise with name {exercise_create.name} already exists",
         ) from e
-    return exercise
-
-
-@router.put(
-    "/{exercise_id}",
-    response_model=ExerciseInDB,
-    status_code=status.HTTP_200_OK,
-)
-def update_exercise(
-    exercise_id: int,
-    exercise_update: ExerciseUpdate,
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_active_user),
-):
-    """
-    Update an exercise by its ID.
-
-    Parameters:
-        exercise_id (int): The ID of the exercise to be updated.
-        exercise_update (ExerciseUpdate): The updated exercise data.
-        db (Session, optional): The database session.
-            Defaults to Depends(get_db).
-        user (User, optional): The current authenticated user.
-
-
-    Returns:
-        ExerciseInDB: The updated exercise.
-
-    Raises:
-        HTTPException: If the exercise does not exist or
-            the user does not have enough permissions.
-        HTTPException: If there is an error updating
-            the exercise in the database.
-    """
-    exercise = exercise_crud.get_one(db, Exercise.id == exercise_id)
-    if exercise is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Exercise with id {exercise_id} not found",
-        )
-
-    if exercise.owner_id != user.id or not user.is_superuser:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions to update exercise",
-        )
-
-    try:
-        exercise = exercise_crud.update(db, exercise, exercise_update)
-    except Exception as e:  # pragma: no cover
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Couldn't update exercise with id {exercise_id}. Error: {str(e)}",
-        ) from e  # pragma: no cover
     return exercise
 
 
