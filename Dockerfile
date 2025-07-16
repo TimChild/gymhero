@@ -1,4 +1,4 @@
-FROM python:3.10-slim as python-base
+FROM python:3.11 as python-base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -23,8 +23,8 @@ ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 FROM python-base as builder-base
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-        curl \
-        build-essential
+    curl \
+    build-essential
 
 RUN --mount=type=cache,target=/root/.cache \
     curl -sSL https://install.python-poetry.org | python3 -

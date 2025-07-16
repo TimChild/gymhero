@@ -1,5 +1,10 @@
+from fastapi import status
+from fastapi.testclient import TestClient
+from httpx import Response
 import pytest
+from sqlalchemy.orm import Session
 
+from gymhero.models.exercise import Exercise
 from gymhero.security import create_access_token
 from scripts.core.utils import _create_first_user
 
@@ -88,6 +93,56 @@ def test_create_exercise(test_client, seed_test_database, valid_jwt_token):
         headers={"Authorization": valid_jwt_token},
     )
     assert response.status_code == 409
+
+
+def create_test_user(client: TestClient, valid_jwt_token: str) -> Response:
+    response = client.post(
+        "/exercises",
+        json={
+            "name": "test",
+            "description": "test",
+            "exercise_type_id": 1,
+            "level_id": 1,
+            "target_body_part_id": 1,
+        },
+        headers={"Authorization": valid_jwt_token},
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    return response
+
+
+def test_can_update_exercise(
+    test_client: TestClient,
+    seed_test_database: None,
+    valid_jwt_token: str,
+    get_test_db: Session,
+):
+    # Create a user 
+    response = create_test_user(test_client, valid_jwt_token)
+    created_id = response.json()["id"]
+    assert created_id is not None
+
+    # Update the exercise
+    response = test_client.put(
+        f"/exercises/{created_id}",
+        json={
+            "name": "new name",
+            "description": "new description",
+            "exercise_type_id": 2,
+            "level_id": 2,
+            "target_body_part_id": 2,
+        },
+        headers={"Authorization": valid_jwt_token},
+    )
+    if not response.status_code == 200:
+        pytest.fail(f"Failed to update exercise: {response.json()}")
+    assert response.json()["name"] == "new name"
+    assert response.json()["description"] == "new description"
+
+    saved = get_test_db.get(Exercise, created_id)
+    assert isinstance(saved, Exercise), "Exercise not found in database"
+    assert saved.name == "new name", "name not updated in database"
+
 
 
 def test_can_delete_exercise(

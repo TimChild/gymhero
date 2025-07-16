@@ -25,9 +25,15 @@ class ExerciseBase(BaseModel):
 class ExerciseCreate(ExerciseBase): ...
 
 
+class ExerciseUpdate(ExerciseBase):
+    name: Optional[str] = None
+    description: str | None = None
+
+
 class ExerciseInDB(ExerciseBase):
     id: int
     created_at: datetime.datetime
+    updated_at: datetime.datetime
     owner_id: int
     model_config = ConfigDict(from_attributes=True)
 

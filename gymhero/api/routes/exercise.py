@@ -1,15 +1,19 @@
 from typing import Annotated, List, Optional, Tuple
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from gymhero.api.dependencies import get_current_active_user, get_pagination_params
 from gymhero.crud import exercise_crud
 from gymhero.database.db import get_db
+import logging
+
+logging.basicConfig(level=logging.INFO)
 from gymhero.log import get_logger
 from gymhero.models import User
 from gymhero.models.exercise import Exercise
-from gymhero.schemas.exercise import ExerciseCreate, ExerciseInDB
+from gymhero.schemas.exercise import ExerciseCreate, ExerciseInDB, ExerciseUpdate
 
 log = get_logger(__name__)
 
@@ -172,6 +176,40 @@ def create_exercise(
             detail=f"Exercise with name {exercise_create.name} already exists",
         ) from e
     return exercise
+
+
+@router.get(
+    "/update/{exercise_id}",
+    response_model=ExerciseInDB,
+    status_code=status.HTTP_302_FOUND,
+)
+async def update_exercise(
+    exercise_id: int,
+    exercise_update: dict,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_active_user),
+):
+    """
+    Updates an exercise by its ID.
+    """
+    logging.info(f"Updating exercise with id {exercise_id} by user {user.id}")
+
+    existing_exercise = db.query(Exercise).filter(Exercise.id == exercise_id).first()
+    if existing_exercise is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Exercise with id {exercise_id} not found",
+        )
+
+    db.execute(
+        text(
+            f"UPDATE exercises SET name = '{exercise_update['name']}' WHERE id = {exercise_id}"
+        )
+    )
+    db.commit()
+
+    db.refresh(existing_exercise)
+    return existing_exercise
 
 
 @router.delete("/{exercise_id}", response_model=dict, status_code=status.HTTP_200_OK)
