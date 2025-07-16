@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 from gymhero.log import get_logger
 from gymhero.models import User
 from gymhero.models.exercise import Exercise
-from gymhero.schemas.exercise import ExerciseCreate, ExerciseInDB
+from gymhero.schemas.exercise import ExerciseCreate, ExerciseInDB, ExerciseUpdate
 
 log = get_logger(__name__)
 
