@@ -33,6 +33,7 @@ class ExerciseUpdate(ExerciseBase):
 class ExerciseInDB(ExerciseBase):
     id: int
     created_at: datetime.datetime
+    updated_at: datetime.datetime
     owner_id: int
     model_config = ConfigDict(from_attributes=True)
 
