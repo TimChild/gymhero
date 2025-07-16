@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 from gymhero.api.dependencies import get_current_active_user, get_pagination_params
 from gymhero.crud import exercise_crud
 from gymhero.database.db import get_db
+import logging
+
+logging.basicConfig(level=logging.INFO)
 from gymhero.log import get_logger
 from gymhero.models import User
 from gymhero.models.exercise import Exercise
@@ -189,6 +192,8 @@ async def update_exercise(
     """
     Updates an exercise by its ID.
     """
+    logging.info(f"Updating exercise with id {exercise_id} by user {user.id}")
+
     existing_exercise = db.query(Exercise).filter(Exercise.id == exercise_id).first()
     if existing_exercise is None:
         raise HTTPException(
